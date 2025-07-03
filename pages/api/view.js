@@ -1,5 +1,5 @@
 import { getDownloadUrl } from '@vercel/blob';
-import fetch from 'node-fetch'; // or native fetch if available in your environment
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
   const { token } = req.query;
@@ -9,11 +9,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get public download URL of the blob
     const url = getDownloadUrl(`${token}.json`);
-
-    // Fetch the JSON content from blob URL
     const response = await fetch(url);
+
     if (!response.ok) {
       return res.status(404).send('Timeline not found or expired.');
     }
