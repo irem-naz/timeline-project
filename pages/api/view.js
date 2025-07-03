@@ -1,51 +1,30 @@
 import { getDownloadUrl } from '@vercel/blob';
-import fetch from 'node-fetch'; // if needed
 
 export default async function handler(req, res) {
   const { token } = req.query;
-
-  if (!token) {
-    return res.status(400).send('Missing token');
-  }
-
+  if (!token) return res.status(400).send('Missing token');
   try {
     const blobName = `${token}.json`;
-    // Get blob path from SDK
-    const path = getDownloadUrl(blobName);
-
-    // Build full URL for public blob (adjust domain accordingly)
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://timeline-startad.vercel.app';
-    const url = baseUrl + path;
-    console.log('path:', path);
-    console.log('url:', url);
-    console.log('VERCEL_URL:', process.env.VERCEL_URL);
-
-    // Fetch the JSON content
-    const response = await fetch(url);
-    if (!response.ok) {
-      return res.status(404).send('Timeline not found or expired.');
+    let path;
+    try {
+      path = await getDownloadUrl(blobName); // Note: it's ASYNC!
+      console.log('getDownloadUrl result:', path);
+    } catch (err) {
+      console.error('getDownloadUrl error:', err);
+      throw err;
     }
-    const data = await response.json();
-    
 
+    if (!path || typeof path !== 'string') {
+      throw new Error('No valid blob URL/path returned');
+    }
+
+    // Fetch the JSON content directly
+    const response = await fetch(path);
+    if (!response.ok) return res.status(404).send('Timeline not found or expired.');
+    const data = await response.json();
 
     res.setHeader('Content-Type', 'text/html');
-    res.status(200).send(`
-      <html>
-        <head>
-          <title>Timeline Viewer</title>
-          <style>
-            body { font-family: sans-serif; padding: 2em; }
-            pre { background: #f5f5f5; padding: 1em; border-radius: 8px; }
-          </style>
-        </head>
-        <body>
-          <h1>Timeline Viewer</h1>
-          <pre>${JSON.stringify(data, null, 2)}</pre>
-          <p><i>This data is stored in Vercel Blob and is temporary. You may delete it anytime by redeploying or rotating tokens.</i></p>
-        </body>
-      </html>
-    `);
+    res.status(200).send(/* ... your HTML ... */);
 
   } catch (err) {
     console.error('❌ Blob read failed:', err);
