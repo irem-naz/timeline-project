@@ -1,4 +1,4 @@
-const storeId = 'cx1a85iwnbqc9ajm'; // ← REPLACE with your Blob Store ID!
+const storeId = process.env.BLOB_STORE_ID;
 
 export default async function handler(req, res) {
   const { token } = req.query;
