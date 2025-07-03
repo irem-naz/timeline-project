@@ -1,6 +1,6 @@
-const timelineStore = new Map();
+import { put } from '@vercel/blob';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -12,11 +12,13 @@ export default function handler(req, res) {
   }
 
   const token = Math.random().toString(36).substring(2, 8);
-  timelineStore.set(token, body);
+
+  // Save to Vercel Blob
+  await put(`${token}.json`, JSON.stringify(body), {
+    contentType: 'application/json'
+  });
 
   res.status(200).json({
     url: `${req.headers.origin || 'https://timeline-startad.vercel.app'}/api/view?token=${token}`
   });
 }
-
-export { timelineStore };
