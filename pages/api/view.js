@@ -1,30 +1,36 @@
-import { getDownloadUrl } from '@vercel/blob';
+import fetch from 'node-fetch'; // or native fetch if Node 18+
 
 export default async function handler(req, res) {
   const { token } = req.query;
   if (!token) return res.status(400).send('Missing token');
+
   try {
-    const blobName = `${token}.json`;
-    let path;
-    try {
-      path = await getDownloadUrl(blobName); // Note: it's ASYNC!
-      console.log('getDownloadUrl result:', path);
-    } catch (err) {
-      console.error('getDownloadUrl error:', err);
-      throw err;
-    }
+    // 🔥 Build the blob's public URL directly:
+    const url = `https://timeline-startad.vercel.app/.vercel/blob/${token}.json`;
 
-    if (!path || typeof path !== 'string') {
-      throw new Error('No valid blob URL/path returned');
+    const response = await fetch(url);
+    if (!response.ok) {
+      return res.status(404).send('Timeline not found or expired.');
     }
-
-    // Fetch the JSON content directly
-    const response = await fetch(path);
-    if (!response.ok) return res.status(404).send('Timeline not found or expired.');
     const data = await response.json();
 
     res.setHeader('Content-Type', 'text/html');
-    res.status(200).send(/* ... your HTML ... */);
+    res.status(200).send(`
+      <html>
+        <head>
+          <title>Timeline Viewer</title>
+          <style>
+            body { font-family: sans-serif; padding: 2em; }
+            pre { background: #f5f5f5; padding: 1em; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>Timeline Viewer</h1>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+          <p><i>This data is stored in Vercel Blob and is temporary. You may delete it anytime by redeploying or rotating tokens.</i></p>
+        </body>
+      </html>
+    `);
 
   } catch (err) {
     console.error('❌ Blob read failed:', err);
