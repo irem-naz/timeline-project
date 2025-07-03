@@ -1,12 +1,14 @@
 import { timelineStore } from './generate';
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   const { token } = req.query;
+
   if (!token || !timelineStore.has(token)) {
     return res.status(404).send('Timeline not found or expired.');
   }
 
   const data = timelineStore.get(token);
+
   res.setHeader('Content-Type', 'text/html');
   res.status(200).send(`
     <html>
