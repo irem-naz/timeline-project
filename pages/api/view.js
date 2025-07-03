@@ -1,4 +1,7 @@
-import { get } from '@vercel/blob';
+import * as blob from '@vercel/blob';
+
+console.log(blob);
+
 
 export default async function handler(req, res) {
   const { token } = req.query;
