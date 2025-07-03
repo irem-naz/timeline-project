@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = getDownloadUrl(`${token}.json`);
+    const url = getDownloadUrl(`timeline-store/${token}.json`);
     const response = await fetch(url);
 
     if (!response.ok) {

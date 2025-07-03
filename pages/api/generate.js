@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const token = Math.random().toString(36).substring(2, 8);
 
     // Save timeline JSON to blob
-    await put(`${token}.json`, JSON.stringify(body), {
+    await put(`timeline-store/${token}.json`, JSON.stringify(body), {
       contentType: 'application/json',
       access: 'public' // ← ADD THIS
     });    
