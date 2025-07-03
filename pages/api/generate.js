@@ -16,8 +16,9 @@ export default async function handler(req, res) {
 
     // Save timeline JSON to blob
     await put(`${token}.json`, JSON.stringify(body), {
-      contentType: 'application/json'
-    });
+      contentType: 'application/json',
+      access: 'public' // ← ADD THIS
+    });    
 
     res.status(200).json({
       url: `${req.headers.origin || 'https://timeline-startad.vercel.app'}/api/view?token=${token}`
