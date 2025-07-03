@@ -1,7 +1,5 @@
-import * as blob from '@vercel/blob';
-
-console.log(blob);
-
+import { getDownloadUrl } from '@vercel/blob';
+import fetch from 'node-fetch'; // or native fetch if available in your environment
 
 export default async function handler(req, res) {
   const { token } = req.query;
@@ -11,19 +9,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const blob = await get(`${token}.json`);
+    // Get public download URL of the blob
+    const url = getDownloadUrl(`${token}.json`);
 
-    if (!blob || !blob.body) {
+    // Fetch the JSON content from blob URL
+    const response = await fetch(url);
+    if (!response.ok) {
       return res.status(404).send('Timeline not found or expired.');
     }
-
-    // ✅ Read stream safely in Node.js
-    const chunks = [];
-    for await (const chunk of blob.body) {
-      chunks.push(chunk);
-    }
-    const raw = Buffer.concat(chunks).toString('utf8');
-    const data = JSON.parse(raw);
+    const data = await response.json();
 
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(`
