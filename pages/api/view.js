@@ -13,8 +13,9 @@ export default async function handler(req, res) {
     return res.status(404).send('Timeline not found or expired.');
   }
 
-  const raw = await blob.text();
-  const data = JSON.parse(raw);
+  const response = new Response(blob.body);
+const data = await response.json();
+
 
   res.setHeader('Content-Type', 'text/html');
   res.status(200).send(`
