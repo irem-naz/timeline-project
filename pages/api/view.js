@@ -23,6 +23,10 @@ export default async function handler(req, res) {
       return res.status(404).send('Timeline not found or expired.');
     }
     const data = await response.json();
+    console.log('path:', path);
+    console.log('url:', url);
+    console.log('VERCEL_URL:', process.env.VERCEL_URL);
+
 
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(`
