@@ -1,24 +1,29 @@
-import fetch from 'node-fetch'; // or native fetch if Node 18+
+const storeId = 'cx1a85iwnbqc9ajm'; // ← REPLACE with your Blob Store ID!
 
 export default async function handler(req, res) {
   const { token } = req.query;
-  if (!token) return res.status(400).send('Missing token');
+
+  if (!token) {
+    return res.status(400).send('Missing token');
+  }
 
   try {
-    // 🔥 Build the blob's public URL directly:
-    const url = `https://timeline-startad.vercel.app/.vercel/blob/${token}.json`;
+    // Construct the public blob URL
+    const url = `https://${storeId}.public.blob.vercel-storage.com/${token}.json`;
 
     const response = await fetch(url);
+
     if (!response.ok) {
       return res.status(404).send('Timeline not found or expired.');
     }
+
     const data = await response.json();
 
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(`
       <html>
         <head>
-          <title>Timeline Viewer</title>
+          <title>Timeline View</title>
           <style>
             body { font-family: sans-serif; padding: 2em; }
             pre { background: #f5f5f5; padding: 1em; border-radius: 8px; }
