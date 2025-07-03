@@ -1,5 +1,5 @@
 import { getDownloadUrl } from '@vercel/blob';
-import fetch from 'node-fetch';
+import fetch from 'node-fetch'; // if needed
 
 export default async function handler(req, res) {
   const { token } = req.query;
@@ -9,9 +9,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = getDownloadUrl(`timeline-store/${token}.json`);
-    const response = await fetch(url);
+    const blobName = `${token}.json`;
+    // Get blob path from SDK
+    const path = getDownloadUrl(blobName);
 
+    // Build full URL for public blob (adjust domain accordingly)
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://timeline-startad.vercel.app';
+    const url = baseUrl + path;
+
+    // Fetch the JSON content
+    const response = await fetch(url);
     if (!response.ok) {
       return res.status(404).send('Timeline not found or expired.');
     }
@@ -21,7 +28,7 @@ export default async function handler(req, res) {
     res.status(200).send(`
       <html>
         <head>
-          <title>Timeline View</title>
+          <title>Timeline Viewer</title>
           <style>
             body { font-family: sans-serif; padding: 2em; }
             pre { background: #f5f5f5; padding: 1em; border-radius: 8px; }
@@ -34,6 +41,7 @@ export default async function handler(req, res) {
         </body>
       </html>
     `);
+
   } catch (err) {
     console.error('❌ Blob read failed:', err);
     res.status(500).send('500 | Internal Server Error.');
