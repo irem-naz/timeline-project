@@ -1,4 +1,5 @@
 const storeId = process.env.BLOB_STORE_ID;
+const timelineUiHtml = require('./timelineUiHtml');
 
 export default async function handler(req, res) {
   const { token } = req.query;
@@ -20,22 +21,7 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     res.setHeader('Content-Type', 'text/html');
-    res.status(200).send(`
-      <html>
-        <head>
-          <title>Timeline View</title>
-          <style>
-            body { font-family: sans-serif; padding: 2em; }
-            pre { background: #f5f5f5; padding: 1em; border-radius: 8px; }
-          </style>
-        </head>
-        <body>
-          <h1>Timeline Viewer</h1>
-          <pre>${JSON.stringify(data, null, 2)}</pre>
-          <p><i>This data is stored in Vercel Blob and is temporary. You may delete it anytime by redeploying or rotating tokens.</i></p>
-        </body>
-      </html>
-    `);
+    res.status(200).send(timelineUiHtml(data));
 
   } catch (err) {
     console.error('❌ Blob read failed:', err);
