@@ -1,4 +1,4 @@
-export default async function timelineUiHtml(data) {
+export default function timelineUiHtml(data) {
     const entries = Array.isArray(data && data.entries) ? data.entries : [];
     const safeData = { ...data, entries };
     const json = JSON.stringify(safeData).replace(/</g, '\\u003c');
