@@ -1,5 +1,5 @@
 const storeId = process.env.BLOB_STORE_ID;
-const timelineUiHtml = require('./timelineUiHtml');
+import timelineUiHtml from './timelineUiHtml';
 
 export default async function handler(req, res) {
   const { token } = req.query;
