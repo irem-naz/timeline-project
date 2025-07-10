@@ -5,7 +5,7 @@ const sampleData = {
   entries: [
     {
       year: '2023',
-      program: 'Ma’an',
+      program: 'Maan',
       issueHeader: 'Session Timing',
       issueInfo: 'Monday sessions were too long and inconvenient, causing attention drop-off.',
       fixApplied: 'NA',
@@ -13,7 +13,7 @@ const sampleData = {
     },
     {
       year: '2024',
-      program: 'Ma’an',
+      program: 'Maan',
       issueHeader: 'Content Depth',
       issueInfo: 'Some topics were too shallow.',
       fixApplied: 'Added more advanced modules.',
@@ -28,16 +28,16 @@ const sampleData = {
       fixRecommended: 'Maintain inventory checks.'
     },
     {
-      year: '2023',
-      program: 'Ma’an',
-      issueHeader: 'Session Timing',
-      issueInfo: 'Monday sessions were too long and inconvenient, causing attention drop-off.',
-      fixApplied: 'NA',
-      fixRecommended: 'Schedule sessions on other days and reduce duration to 4-hour blocks.'
+      year: '2024',
+      program: 'Maan',
+      issueHeader: 'Content Depth',
+      issueInfo: 'Some topics were too shallow.',
+      fixApplied: 'Added more advanced modules.',
+      fixRecommended: 'Continue to deepen content.'
     },
     {
       year: '2024',
-      program: 'Ma’an',
+      program: 'Maan',
       issueHeader: 'Content Depth',
       issueInfo: 'Some topics were too shallow.',
       fixApplied: 'Added more advanced modules.',
