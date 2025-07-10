@@ -135,6 +135,7 @@ export default function timelineUiHtml(data) {
               max-height: 100%;
               text-align: right;
               font-size: 2.1rem;
+              word-break: break-word;
             }
             .info-card:active,
             .info-card.expanded,
@@ -268,6 +269,59 @@ export default function timelineUiHtml(data) {
           </div>
           <div class="subtitle" style="margin-top:2.5em;">Timeline</div>
           <div id="timeline-graph" style="width:1300px;height:320px;margin: 0 0 0 0;"></div>
+          <!-- Updated height in SVG, so update container height too -->
+          <style>#timeline-graph { height: 440px !important; }</style>
+          <div class="legend-section">
+            <div class="legend-title">Issue Legend</div>
+            <div class="legend-items">
+              <span class="legend-item" style="background:#FFD6E0;">Session scheduling/format</span>
+              <span class="legend-item" style="background:#D6F0FF;">Interactivity/engagement</span>
+              <span class="legend-item" style="background:#FFF6D6;">Feedback collection</span>
+              <span class="legend-item" style="background:#E0FFD6;">Mentorships/Coaching</span>
+              <span class="legend-item" style="background:#E6D6FF;">Demo Day</span>
+              <span class="legend-item" style="background:#FFD6F6;">Investor engagement</span>
+              <span class="legend-item" style="background:#D6FFF6;">Seed funding/financial clarity</span>
+              <span class="legend-item" style="background:#FFECD6;">Program design/content customization</span>
+              <span class="legend-item" style="background:#D6E8FF;">Communication/role clarity/outcome clarity</span>
+              <span class="legend-item" style="background:#F6FFD6;">Alumni engagement</span>
+              <span class="legend-item" style="background:#FFD6D6;">Participant selection</span>
+              <span class="legend-item" style="background:#D6FFF0;">Partners (onboarding/engagement)</span>
+              <span class="legend-item" style="background:#F6D6FF;">Resource shortcomings</span>
+            </div>
+          </div>
+          <style>
+            .legend-section {
+              max-width: 1200px;
+              margin: 3em auto 3em auto;
+              text-align: left;
+              width: 100%;
+              box-sizing: border-box;
+            }
+            .legend-title {
+              font-family: 'Montserrat', sans-serif;
+              font-size: 1.1em;
+              font-weight: 600;
+              margin-bottom: 1em;
+              color: #222;
+            }
+            .legend-items {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.7em 1.2em;
+            }
+            .legend-item {
+              display: inline-block;
+              padding: 0.35em 1.1em;
+              border-radius: 1.2em;
+              font-family: 'Montserrat', sans-serif;
+              font-size: 1em;
+              color: #222;
+              font-weight: 500;
+              box-shadow: 0 1px 6px #0001;
+              margin-bottom: 0.3em;
+              letter-spacing: 0.01em;
+            }
+          </style>
           <div class="subtitle">Information Cards</div>
           <div class="card-container" id="cardContainer"></div>
           <div class="footer-section">
@@ -293,13 +347,31 @@ export default function timelineUiHtml(data) {
             function fitAllMiniCards() {
               document.querySelectorAll('.mini-card').forEach(fitMiniCardText);
             }
-            // Observe DOM changes to fit text when mini-cards are added
-            const observer = new MutationObserver(fitAllMiniCards);
-            observer.observe(document.body, { childList: true, subtree: true });
-            // Also fit on window resize
-            window.addEventListener('resize', fitAllMiniCards);
-            // Initial fit
-            document.addEventListener('DOMContentLoaded', fitAllMiniCards);
+            // Dynamically resize font in info-main to fit content
+            function fitInfoMainText(card) {
+              const infoMain = card.querySelector('.info-main');
+              if (!infoMain) return;
+              const maxFont = 2.1; // rem
+              const minFont = 1.0; // rem
+              const step = 0.05;
+              let fontSize = maxFont;
+              infoMain.style.fontSize = fontSize + 'rem';
+              infoMain.style.whiteSpace = 'pre-line';
+              infoMain.style.wordBreak = 'break-word';
+              // Shrink font until fits
+              while ((infoMain.scrollHeight > card.clientHeight || infoMain.scrollWidth > card.clientWidth) && fontSize > minFont) {
+                fontSize -= step;
+                infoMain.style.fontSize = fontSize + 'rem';
+              }
+            }
+            function fitAllInfoMainTexts() {
+              document.querySelectorAll('.info-card').forEach(fitInfoMainText);
+            }
+            // Observe DOM changes to fit text when info-cards are added
+            const infoMainObserver = new MutationObserver(fitAllInfoMainTexts);
+            infoMainObserver.observe(document.body, { childList: true, subtree: true });
+            window.addEventListener('resize', fitAllInfoMainTexts);
+            document.addEventListener('DOMContentLoaded', fitAllInfoMainTexts);
 
             // Render empty timeline graph
             function renderTimelineGraph(entries) {
@@ -314,7 +386,7 @@ export default function timelineUiHtml(data) {
               for (let y = minYear; y <= maxYear; y++) yearRange.push(y);
               const programs = Array.from(new Set(entries.map(e => e.program))).filter(Boolean);
               // SVG dimensions
-              const width = 1300, height = 320, margin = {left: 200, right: 0, top: 40, bottom: 40};
+              const width = 1300, height = 440, margin = {left: 200, right: 0, top: 120, bottom: 40};
               const graphW = width - margin.left - margin.right;
               const graphH = height - margin.top - margin.bottom;
               // X: years, Y: programs (vertical lines)
@@ -348,7 +420,26 @@ export default function timelineUiHtml(data) {
                 groupMap[key].push(e);
               });
               const circleRadius = 16;
-              const circleSpread = 28; // distance from center for multiple dots
+              // Increase spread for every 6 dots
+              function getCircleSpread(groupLen) {
+                return 28 + Math.floor((groupLen-1)/6)*22;
+              }
+              // Issue header to pastel color map (must match legend)
+              const issueColorMap = {
+                'Session scheduling/format': '#FFD6E0',
+                'Interactivity/engagement': '#D6F0FF',
+                'Feedback collection': '#FFF6D6',
+                'Mentorships/Coaching': '#E0FFD6',
+                'Demo Day': '#E6D6FF',
+                'Investor engagement': '#FFD6F6',
+                'Seed funding/financial clarity': '#D6FFF6',
+                'Program design/content customization': '#FFECD6',
+                'Communication/role clarity/outcome clarity': '#D6E8FF',
+                'Alumni engagement': '#F6FFD6',
+                'Participant selection': '#FFD6D6',
+                'Partners (onboarding/engagement)': '#D6FFF0',
+                'Resource shortcomings': '#F6D6FF',
+              };
               // Draw circles with unique ids for interaction
               Object.entries(groupMap).forEach(([key, group]) => {
                 const [year, program] = key.split('||');
@@ -357,16 +448,27 @@ export default function timelineUiHtml(data) {
                 if (group.length === 1) {
                   const e = group[0];
                   const cardId = 'card-' + encodeURIComponent(e.year + '-' + e.program + '-' + e.issueHeader);
-                  svg += '<circle class="timeline-dot" data-cardid="' + cardId + '" cx="' + cx + '" cy="' + cy + '" r="' + circleRadius + '" fill="#fff" stroke="#00a29d" stroke-width="4" style="cursor:pointer;transition:all 0.2s;filter:drop-shadow(0 2px 8px #00a29d33)" />';
+                  const color = issueColorMap[e.issueHeader] || '#fff';
+                  svg += '<circle class="timeline-dot" data-cardid="' + cardId + '" cx="' + cx + '" cy="' + cy + '" r="' + circleRadius + '" fill="' + color + '" stroke="#00a29d" stroke-width="4" style="cursor:pointer;transition:all 0.2s;filter:drop-shadow(0 2px 8px #00a29d33)" />';
                 } else {
-                  // Distribute in a ring
-                  group.forEach((e, i) => {
-                    const angle = (2 * Math.PI * i) / group.length;
-                    const dotCx = cx + Math.cos(angle) * circleSpread;
-                    const dotCy = cy + Math.sin(angle) * circleSpread;
-                    const cardId = 'card-' + encodeURIComponent(e.year + '-' + e.program + '-' + e.issueHeader);
-                    svg += '<circle class="timeline-dot" data-cardid="' + cardId + '" cx="' + dotCx + '" cy="' + dotCy + '" r="' + circleRadius + '" fill="#fff" stroke="#00a29d" stroke-width="4" style="cursor:pointer;transition:all 0.2s;filter:drop-shadow(0 2px 8px #00a29d33)" />';
-                  });
+                  // Distribute in concentric rings: 8 in first, 14 in second, 20 in third, etc.
+                  const ringDefs = [8, 14, 20, 26, 32]; // can add more if needed
+                  const baseSpread = 36;
+                  let dotIndex = 0;
+                  for (let ring = 0; dotIndex < group.length; ring++) {
+                    const dotsInRing = ringDefs[ring] || 32;
+                    const spread = baseSpread * (ring + 1);
+                    const dotsThisRing = Math.min(dotsInRing, group.length - dotIndex);
+                    for (let i = 0; i < dotsThisRing; i++, dotIndex++) {
+                      const angle = (2 * Math.PI * i) / dotsThisRing;
+                      const dotCx = cx + Math.cos(angle) * spread;
+                      const dotCy = cy + Math.sin(angle) * spread;
+                      const e = group[dotIndex];
+                      const cardId = 'card-' + encodeURIComponent(e.year + '-' + e.program + '-' + e.issueHeader);
+                      const color = issueColorMap[e.issueHeader] || '#fff';
+                      svg += '<circle class="timeline-dot" data-cardid="' + cardId + '" cx="' + dotCx + '" cy="' + dotCy + '" r="' + circleRadius + '" fill="' + color + '" stroke="#00a29d" stroke-width="4" style="cursor:pointer;transition:all 0.2s;filter:drop-shadow(0 2px 8px #00a29d33)" />';
+                    }
+                  }
                 }
               });
               svg += '</g></svg>';
@@ -495,6 +597,7 @@ export default function timelineUiHtml(data) {
                   });
                 });
                 fitAllMiniCards();
+                fitAllInfoMainTexts();
                 renderTimelineGraph(filtered);
               }
   
